@@ -1,0 +1,13 @@
+train: ./datasets/urpc/train/images
+val: ./datasets/urpc/valid/images
+test: ./datasets/urpc/test/images
+
+nc: 4
+names: ['echinus', 'holothurian', 'scallop', 'starfish']
+
+roboflow:
+  workspace: underwater-fish-f6cri
+  project: urpc2019-nrbk1
+  version: 3
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/underwater-fish-f6cri/urpc2019-nrbk1

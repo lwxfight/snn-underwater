@@ -1,0 +1,13 @@
+train: ./datasets/udd/train/images
+val: ./datasets/udd/valid/images
+test: ./datasets/udd/test/images
+
+nc: 3
+names: ['scallop','holothurian','echinus']
+
+roboflow:
+  workspace: yuyutsu
+  project: udd-j8cpd
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/yuyutsu/udd-j8cpd

@@ -1,0 +1,52 @@
+# YOLOv9
+
+# parameters
+nc: 4  # number of classes
+depth_multiple: 1.0  # model depth multiple
+width_multiple: 1.0  # layer channel multiple
+#activation: nn.LeakyReLU(0.1)
+#activation: nn.ReLU()
+
+# anchors
+anchors: 2
+
+# gelan backbone
+backbone:
+  [
+   # conv down
+   [-1, 1, SEncoder, [64, 3, 2]],  # 0-P1/2
+
+   # elan-1 block
+   [-1, 1, BasicBlock1, [128, 128, 64, 1]],  # 1
+
+   # elan-2 block
+   [-1, 1, BasicBlock1, [256, 256, 128, 1]],  # 2
+
+   # elan-2 block
+   [-1, 1, BasicBlock1, [512, 512, 256, 1]],  # 3
+  ]
+
+# gelan head
+head:
+  [
+    # elan-spp block
+   [ -1, 1, TransitionBlock, [ 512, 256 ] ],  # 4
+
+    # up-concat merge
+   [ -1, 1, SUpsample, [ 2 ] ],
+   [ [ -1, 2 ], 1, SConcat, [ 1 ] ],  # cat backbone P4
+
+    # elan-2 block
+   [ -1, 1, BasicBlock2, [ 256, 256, 128, 1 ] ],  # 7 (P3/16-medium)
+
+    # avg-conv-down merge
+   [-1, 1, SConv, [256, 3, 2]],
+   [ [ -1, 4 ], 1, SConcat, [ 1 ] ],  # cat head P5
+
+    # elan-2 block
+   [ -1, 1, BasicBlock2, [ 256, 256, 128, 1 ] ],  # 10 (P4/32-large)
+
+    # detect
+   [ [ 7, 10 ], 1, SDDetect, [ nc ] ],  # DDetect(P3, P4, P5)
+
+  ]
