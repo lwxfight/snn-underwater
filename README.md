@@ -69,5 +69,5 @@ Please download in "YOLOv9" format.
 
 For help or issues using this git, please submit a GitHub issue.
 
-For other communications related to this git, please contact `chenyang@ctgu.edu.cn` and `lwxfight@163.com`.
+For other communications related to this git, please contact `chenyang@ctgu.edu.cn` and `lwxfight@126.com`.
 
