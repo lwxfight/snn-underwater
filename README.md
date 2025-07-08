@@ -1,4 +1,4 @@
-# SU-YOLO: Spiking Neural Network for Efficient Underwater Object Detection [[Neurocomputing]]([https://arxiv.org/abs/2503.24389](https://www.sciencedirect.com/science/article/pii/S0925231225009828?dgcid=coauthor))
+# SU-YOLO: Spiking Neural Network for Efficient Underwater Object Detection [Neurocomputing]([https://arxiv.org/abs/2503.24389](https://www.sciencedirect.com/science/article/pii/S0925231225009828?dgcid=coauthor))
 
 [Chenyang Li](), [Wenxuan Liu](), [Guoqiang Gong](), [Xiaobo Ding]() and [Xian Zhong]()
 
