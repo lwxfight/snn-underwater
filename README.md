@@ -73,7 +73,7 @@ author = {Chenyang Li and Wenxuan Liu and Guoqiang Gong and Xiaobo Ding and Xian
 
 For help or issues using this git, please submit a GitHub issue.
 
-Thanks to Chenyang Li for his great contribution to building this project.
+Thanks to [Chenyang Li](https://github.com/CaoJu600) for his great contribution to building this project.
 
 
 For other communications related to this git, please contact `chenyang@ctgu.edu.cn` and `lwxfight@126.com`.
