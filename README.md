@@ -58,12 +58,16 @@ Please download in "YOLOv9" format.
 ## Citation
 
 ```
-@article{li2025suyolo, 
-      author = {Chenyang Li and Wenxuan Liu and Guoqiang Gong and Xiaobo Ding and Xian Zhong},
-      title = {SU-YOLO: Spiking Neural Network for Efficient Underwater Object Detection},
-      journal = {arXiv preprint arXiv:2503.24389},
-      year = {2025},
-      url={https://arxiv.org/abs/2503.24389}, 
+@article{LI2025130310,
+title = {SU-YOLO: Spiking neural network for efficient underwater object detection},
+journal = {Neurocomputing},
+volume = {644},
+pages = {130310},
+year = {2025},
+issn = {0925-2312},
+doi = {https://doi.org/10.1016/j.neucom.2025.130310},
+url = {https://www.sciencedirect.com/science/article/pii/S0925231225009828},
+author = {Chenyang Li and Wenxuan Liu and Guoqiang Gong and Xiaobo Ding and Xian Zhong},
 }
 ```
 
