@@ -1,0 +1,10 @@
+# SPARK dataset - Space object detection from event camera data
+# Pipeline: SPARK 3D renders -> Blender animation -> v2e (DVS conversion) -> event frame histograms
+# Input format: 2-channel (ON/OFF polarity) event frame histograms
+
+train: ./datasets/spark/train/images
+val: ./datasets/spark/valid/images
+test: ./datasets/spark/test/images
+
+nc: 1
+names: ['satellite']

@@ -55,11 +55,14 @@ class SEncoder(nn.Module):
         self.act2 = neuron.IFNode(surrogate_function=surrogate.ATan(), detach_reset=True,step_mode='s')
 
     def forward(self, x):
+        # Local contrast normalization before spike encoding
+        # Suppresses static background (stars) and enhances faint moving objects (satellites)
+        x = (x - x.mean(dim=(-2, -1), keepdim=True)) / (x.std(dim=(-2, -1), keepdim=True) + 1e-5)
+
         x = [x for _ in range(time_step)]
         x = [self.conv(x[i]) for i in range(time_step)]
         x = self.bn(x)
         out = [self.act(x[i]) for i in range(time_step)]
-        #out = Denoise(out)
         out = [self.conv2(out[i]) for i in range(time_step)]
         out = self.bn2(out)
         out = [self.act2(out[i]) for i in range(time_step)]
@@ -260,7 +263,7 @@ class SDDetect(nn.Module):
         super().__init__()
         self.nc = nc  # number of classes
         self.nl = len(ch)  # number of detection layers
-        self.reg_max = 16
+        self.reg_max = 4
         self.no = nc + self.reg_max * 4  # number of outputs per anchor
         self.inplace = inplace  # use inplace ops (e.g. slice assignment)
         self.stride = torch.zeros(self.nl)  # strides computed during build
@@ -291,105 +294,8 @@ class SDDetect(nn.Module):
         m = self  # self.model[-1]  # Detect() module
         for a, b, s in zip(m.cv2, m.cv3, m.stride):  # from
             a[-1].conv.bias.data[:] = 1.0  # box
-            b[-1].conv.bias.data[:m.nc] = math.log(5 / m.nc / (640 / s) ** 2)  # cls (5 objects and 80 classes per 640 image)
+            b[-1].conv.bias.data[:m.nc] = math.log(1 / m.nc / (640 / s) ** 2)  # cls (1 object per 640 image, sparse satellite scenes)
     
-def Denoise(x):
-    x = [1-x[i] for i in range(time_step)]
-    x = [FindPoints(x[i],3) for i in range(time_step)]
-    x = [FindPoints(x[i],2) for i in range(time_step)]
-    x = [1-x[i] for i in range(time_step)]
-    x = [FindPoints(x[i],1) for i in range(time_step)]
-    return x
-
-def Denoise2(x):
-    x = [1-x[i] for i in range(time_step)]
-    x = [FindPoints(x[i],3) for i in range(time_step)]
-    x = [FindPoints(x[i],2) for i in range(time_step)]
-    x = [1-x[i] for i in range(time_step)]
-    #x = [FindPoints(x[i],1) for i in range(time_step)]
-    return x
-
-def Denoise3(x):
-    x = [FindPoints(x[i],0) for i in range(time_step)]
-    x = [FindPoints(x[i],1) for i in range(time_step)]
-    return x
-
-def FindPoints(tensor,type):
-    if type == 1 or type == 0:
-        if tensor.dtype == torch.float32:
-            kernel = torch.tensor([[-1, -1, -1],
-                                   [-1,  8, -1],
-                                   [-1, -1, -1]], dtype=torch.float32)
-        if tensor.dtype == torch.float16:
-            kernel = torch.tensor([[-1, -1, -1],
-                                   [-1,  8, -1],
-                                   [-1, -1, -1]], dtype=torch.float16)
-    if type == 2:
-        if tensor.dtype == torch.float32:
-            kernel = torch.tensor([[2, 0, 2],
-                                   [ 0, -8,  0],
-                                   [2, 0, 2]], dtype=torch.float32)
-        if tensor.dtype == torch.float16:
-            kernel = torch.tensor([[2, 0, 2],
-                                   [ 0, -8,  0],
-                                   [2, 0, 2]], dtype=torch.float16)
-    if type == 3:
-        if tensor.dtype == torch.float32:
-            kernel = torch.tensor([[ 0, 2,  0],
-                                   [2,  -8, 2],
-                                   [ 0, 2,  0]], dtype=torch.float32)
-        if tensor.dtype == torch.float16:
-            kernel = torch.tensor([[0, 2,  0],
-                                   [2, -8, 2],
-                                   [0, 2,  0]], dtype=torch.float16)
-    if type == 4:
-        if tensor.dtype == torch.float32:
-            kernel = torch.tensor([[-1,-1,-1,-1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1,-1,-1,-1,-1]], dtype=torch.float32)
-        if tensor.dtype == torch.float16:
-            kernel = torch.tensor([[-1,-1,-1,-1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1, 1, 1, 1,-1],
-                                   [-1,-1,-1,-1,-1]], dtype=torch.float16)
-    
-    # kernel 需要扩展到与输入 tensor 的 channels 维度匹配
-    # kernel 是 1x1x3x3， 我们需要变为 channels x 1 x 3 x 3 以应用到每个通道
-    channels = tensor.size(1)  # 获取输入的 channels 数
-    kernel = kernel.unsqueeze(0).unsqueeze(0)  # 变成 1x1x3x3
-    if type==4:
-        kernel = kernel.expand(channels, 1, 5, 5)  # 变成 channels x 1 x 3 x 3
-    else:
-        kernel = kernel.expand(channels, 1, 3, 3)  # 变成 channels x 1 x 3 x 3
-    kernel = kernel.to(tensor.device)
-    # 使用卷积操作
-    if type==4:
-        conv_result = F.conv2d(tensor, kernel, padding=2, groups=channels).detach()
-    else:
-        conv_result = F.conv2d(tensor, kernel, padding=1, groups=channels).detach()
-    
-    # 找到卷积结果为 4 的位置
-    if type==1:
-        positive_points = (conv_result >=8).int().detach()
-        negative_points = 0
-    if type==0:
-        positive_points = 0
-        negative_points = (conv_result <=-6).int().detach()
-    if type==4:
-        positive_points = 0
-        negative_points = (conv_result <=-12).int().detach()
-    if type==2:
-        positive_points = (conv_result <=-8).int().detach()
-        negative_points = 0
-    if type==3:
-        positive_points = (conv_result <=-8).int().detach()
-        negative_points = 0
-    # 将孤立点的位置设置为 0
-    result = tensor + negative_points - positive_points
-    return result
 
 class seBatchNorm(nn.Module):
     def __init__(self,c,t,n=1.0):
